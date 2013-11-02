@@ -1,10 +1,10 @@
 (function($) {
-  // Nadpisujemy funkcje synchronizujaca dane z serwerem, gdyz nie mamy czesci serwerowej
+  // Override function syncro data with the server, because we do not have a server
   Backbone.sync = function(method, model, success, error) {
     success();
   };
    
-  // Definicja modelu Employee
+  // Definition of the Employee model
   var Employee = Backbone.Model.extend({
     defaults : {
       firstName : '',
@@ -13,85 +13,83 @@
     }
   });
  
-  // Definicja listy skadajaca sie z elementow Employee
+  // Definition of the Employee List
   var EmployeeList = Backbone.Collection.extend({
     model : Employee
   });
  
-  // Definicja widoku dla jednego Employee
-  // Bedzie ona skladala sie z tagu li
+  // Defintion of the Single Employee View
+  // It can be consist of li tag
   var EmployeeView = Backbone.View.extend({
     tagName : 'li',
-    // Obsluga zdarzenia przyciskow Delete wystepujacych przy kazdym Employee
-    // Klikniecie w przycisk spowoduje wywolanie funkcji deleteEmployee
+    // Service of event for Delete buttons exists in every Employee
+    // Click in button cause calling function deleteEmployee
     events : {
       'click button.delete' : 'deleteEmployee'
     },
-    // Konstruktor widoku
+    // View constructor
     initialize : function() {
       var self = this;
-      // Jezeli w modul nastapi usuniecie musimy usunac li z danym Employee
+      // If in model will be removed element we have to remove li for this Employee
       this.model.bind('remove', function() {
         $(self.el).remove();
       });
     },
-    // Funkcja odpowiedzialna za narysowanie widoku this.el
-    // czyli w tym przypadku li z zawartoscia
+    // Function responsible for drawing view this.el
+    // in this case li with content
     render : function() {
       $(this.el).html(//
-      // Wyswietlenie w widoku poszczegolnych pol z modelu Employee
+      // Display view of the fields from Employee model
       '<span>' + //
       '  ' + this.model.get('firstName') + ' ' + //
       '  ' + this.model.get('lastName') + ' ' + //
       '  ' + this.model.get('email') + ' ' + //
       '</span>' + '    ' + //
-      // Przy kazdym wyswietlonym Employee bedzie przycisk pozwalajacy
-      // na jego usuniecie 
+      // Every displayed Employee will be attached button Delete (to remove this Employee) 
       '<button type="button" class="delete">Delete</button>');
       return this;
     },
-    // Funkcja powoduje usuniecie danej instancji Employee
-    // w konsekwencji zostanie zawolane zdarzenie remove
-    // i zostanie usuniety rowniez widok dla tego Employee
+    // Function cause removing instance of Employee
+    // in this case will be called event remove
+    // and view for this Employee will be remove too
     deleteEmployee : function() {
       this.model.destroy();
     }
   });
  
-  // Definicja widoku dla listy Employee
+  // View definition for the Employee List
   var EmployeeListView = Backbone.View.extend({
-    // Nie bedzie tworzony nowy element html
-    // tylko dolaczamy this.el bezposrednio do body
+    // Do not be create new element html
+    // but attach this.el directly to body element
     el : $('body'),
-    // Obsluga zdarzenia przycisku add pod formularzem
-    // Klikniecie w przycisk powoduje wywolanie funkcji addEmployee
+    // Event service for button add under form
+    // Click on this button cause calling function addEmployee
     events : {
       'click button#add' : 'addEmployee'
     },
-    // Konstruktor widoku
+    // View constructor
     initialize : function() {
-      // Stworzenie instancji listy
+      // Creating instance of the list
       this.employeeList = new EmployeeList();
-      // W przypadku gdy nastepuje dodanie do listy instancji modelu Employee
-      // zdarzenie dodania uruchamia funkcje ktora tworzy dla tej instancji
-      // widok EmployeeView, ktory jest dolaczany do elemenu ul bedacego
-      // w this.el (czyli body)
+      // If instance of model Employee is added to the list
+      // adding event trigger function which create for this instance
+      // EmplyeeView, which is attached to ul element existing in this.el (that is body)
       this.employeeList.bind('add', function(employee) {
         var employeeView = new EmployeeView({
           model : employee
         });
         $('ul', this.el).append(employeeView.render().el);
       });
-      // Reczne wywolanie rysowania widok this.el (body)
+      // Manual call drawing this.el view (body)
       this.render();
     },
-    // Funkcja odpowiedzialna za narysowanie widoku this.el
-    // czyli w tym przypadku body z zawartoscia
+    // Function responsible for drawing this.el view
+    // in this case that is body with content
     render : function() {
       $(this.el).append(//
       '<div style="width: 250px; text-align: right; border: 1px gray solid;">' + //
       '  <div style="width: 100%; text-align: left; background-color: lightgray;">New Employee</div>' + //
-      // Fomularza z polami Employee oraz przyciskiem Add
+      // Form with Employee fields and Add button
       '  <form>' + //
       '    First name: <input type="text" id="firstName" value="John" /><br/> ' + //
       '    Last name: <input type="text" id="lastName" value="Smith" /><br/> ' + //
@@ -99,28 +97,27 @@
       '    <button type="button" id="add" style="width: 70px;">Add</button>' + //
       '  </form>' + //
       '</div>');
-      // Dodanie pod formularzem ul, do ktorego beda doklejane widoki li
-      // dla pojedynczych instancji modelu Employee
+      // Adding under form ul, in which are attached li view
+      // for single instance Employee model
       $(this.el).append('<ul></ul>');
     },
-    // Funkcja powoduje dodanie nowej instancji Employee do listy
-    // w konsekwnecji zostanie zawolane zdarzenie add dla listy
-    // i zostanie dodany nowy widok EmployeeView do EmployeeListView
+    // Function casue adding new instance Employee to the list
+    // in this case it will be call event add for this list
+    // and will be added new EmployeeView to the EmployeeListView
     addEmployee : function() {
-      // Nowa instancja modelu Employee i ustawienie jej wartosci pol
-      // pobranych z formularza po wcisnieciu przycisku Add
+      // New instance Employee model and setting values of fields
+      // read from form after press Add button 
       var employee = new Employee();
       employee.set({
         firstName : $('input#firstName').val(),
         lastName : $('input#lastName').val(),
         email : $('input#email').val()
       });
-      // Dodanie instacji modelu Employee do Listy (to powoduje zdarzenie add na liscie)
+      // Adding instance Employee model to the list (it casue add event on the list)
       this.employeeList.add(employee);
     }
   });
  
-  // Stworzenie naszej aplikacji poprzez instancje
-  // glownego widoku EmployeeListView
+  // Create application through the instance main EmployeeListView
   var employeeListView = new EmployeeListView();
 })(jQuery);
